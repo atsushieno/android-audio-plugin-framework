@@ -75,9 +75,9 @@ void aap_parse_plugin_descriptor_into(const char* pluginPackageName, const char*
                         auto maximumValue = std::unique_ptr<const char>(C(xmlGetNsProp(portElement, XC("maximum"), nullptr)));
                         auto nativePort = new PortInformation(portName.get(), content, direction);
                         if (defaultValue != nullptr || minimumValue != nullptr || maximumValue != nullptr) {
-                            nativePort->setPropertyValueString(AAP_PORT_DEFAULT, defaultValue.get());
-                            nativePort->setPropertyValueString(AAP_PORT_MINIMUM, minimumValue.get());
-                            nativePort->setPropertyValueString(AAP_PORT_MAXIMUM, maximumValue.get());
+                            nativePort->setPropertyValueString(AAP_PARAMETER_DEFAULT, defaultValue.get());
+                            nativePort->setPropertyValueString(AAP_PARAMETER_MINIMUM, minimumValue.get());
+                            nativePort->setPropertyValueString(AAP_PARAMETER_MAXIMUM, maximumValue.get());
                         }
                         plugin->addPort(nativePort);
                     }

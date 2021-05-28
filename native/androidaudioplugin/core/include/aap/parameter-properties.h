@@ -1,10 +1,10 @@
 
-#define AAP_PORT_URL "urn:org.androidaudioplugin.parameter-properties"
-#define AAP_PORT_BASE AAP_PORT_URL "#"
-#define AAP_PORT_DEFAULT AAP_PORT_BASE "default"
-#define AAP_PORT_MAXIMUM AAP_PORT_BASE "maximum"
-#define AAP_PORT_MINIMUM AAP_PORT_BASE "minimum"
-#define AAP_PORT_OPTIONAL AAP_PORT_BASE "optional"
-#define AAP_PORT_ENUMERATION AAP_PORT_BASE "enumeration"
-#define AAP_PORT_TYPE AAP_PORT_BASE "type"
+#define AAP_PARAMETER_URL "urn:org.androidaudioplugin.parameter-properties"
+#define AAP_PARAMETER_BASE AAP_PARAMETER_URL "#"
+#define AAP_PARAMETER_DEFAULT AAP_PARAMETER_BASE "default"
+#define AAP_PARAMETER_MAXIMUM AAP_PARAMETER_BASE "maximum"
+#define AAP_PARAMETER_MINIMUM AAP_PARAMETER_BASE "minimum"
+#define AAP_PARAMETER_OPTIONAL AAP_PARAMETER_BASE "optional"
+#define AAP_PARAMETER_ENUMERATION AAP_PARAMETER_BASE "enumeration"
+#define AAP_PARAMETER_TYPE AAP_PARAMETER_BASE "type"
 

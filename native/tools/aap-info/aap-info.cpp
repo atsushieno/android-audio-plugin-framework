@@ -45,9 +45,9 @@ int main(int argc, char** argv) {
         std::cout << "    - Name: " << port->getName() << std::endl;
         std::cout << "    - Content Type: " << port->getContentType() << std::endl;
         std::cout << "    - Direction: " << port->getPortDirection() << std::endl;
-        std::cout << "    - Default: " << port->getDefaultValue() << std::endl;
-        std::cout << "    - Min Value: " << port->getMinimumValue() << std::endl;
-        std::cout << "    - Max Value: " << port->getMaximumValue() << std::endl;
+        std::cout << "    - Default: " << port->getPropertyAsFloat(AAP_PARAMETER_DEFAULT) << std::endl;
+        std::cout << "    - Min Value: " << port->getPropertyAsFloat(AAP_PARAMETER_MINIMUM) << std::endl;
+        std::cout << "    - Max Value: " << port->getPropertyAsFloat(AAP_PARAMETER_MAXIMUM) << std::endl;
     }
 
     auto file = info->getLocalPluginSharedLibrary();

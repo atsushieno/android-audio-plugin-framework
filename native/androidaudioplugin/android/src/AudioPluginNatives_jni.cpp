@@ -154,9 +154,9 @@ pluginInformation_fromJava(JNIEnv *env, jobject pluginInformation) {
 		auto content = (aap::ContentType) (int) env->CallIntMethod(para, j_method_parameter_get_content);
 		auto nativePara = new aap::ParameterInformation(name, content);
 		if (env->CallBooleanMethod(para, j_method_parameter_has_value_range)) {
-			nativePara->setPropertyValueString(AAP_PORT_DEFAULT, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_default)));
-			nativePara->setPropertyValueString(AAP_PORT_MINIMUM, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_minimum)));
-			nativePara->setPropertyValueString(AAP_PORT_MAXIMUM, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_maximum)));
+			nativePara->setPropertyValueString(AAP_PARAMETER_DEFAULT, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_default)));
+			nativePara->setPropertyValueString(AAP_PARAMETER_MINIMUM, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_minimum)));
+			nativePara->setPropertyValueString(AAP_PARAMETER_MAXIMUM, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_maximum)));
 		}
 		aapPI->addParameter(nativePara);
 		free((void*) name);

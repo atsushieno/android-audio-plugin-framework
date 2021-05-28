@@ -48,14 +48,14 @@ protected:
 	PropertyContainer() {}
 
 	// deprecated
-	bool hasValueRange() const { return hasProperty(AAP_PORT_DEFAULT); }
+	bool hasValueRange() const { return hasProperty(AAP_PARAMETER_DEFAULT); }
 
 	// deprecated
-	float getDefaultValue() const { return hasProperty(AAP_PORT_DEFAULT) ? getPropertyAsFloat(AAP_PORT_DEFAULT) : 0.0f; }
+	float getDefaultValue() const { return hasProperty(AAP_PARAMETER_DEFAULT) ? getPropertyAsFloat(AAP_PARAMETER_DEFAULT) : 0.0f; }
 	// deprecated
-	float getMinimumValue() const { return hasProperty(AAP_PORT_MINIMUM) ? getPropertyAsFloat(AAP_PORT_MINIMUM) : 0.0f; }
+	float getMinimumValue() const { return hasProperty(AAP_PARAMETER_MINIMUM) ? getPropertyAsFloat(AAP_PARAMETER_MINIMUM) : 0.0f; }
 	// deprecated
-	float getMaximumValue() const { return hasProperty(AAP_PORT_MAXIMUM) ? getPropertyAsFloat(AAP_PORT_MAXIMUM) : 0.0f; }
+	float getMaximumValue() const { return hasProperty(AAP_PARAMETER_MAXIMUM) ? getPropertyAsFloat(AAP_PARAMETER_MAXIMUM) : 0.0f; }
 
 public:
 

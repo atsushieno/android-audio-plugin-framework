@@ -105,7 +105,7 @@ int runHostAAP(int sampleRate, const char *pluginID, void *wavL, void *wavR, int
 		}
 		else
             for (int b = 0; b < float_count; b++)
-                    controlIn[b] = parameters != nullptr ? parameters[i] : instance->getPluginInformation()->getPort(i)->getDefaultValue();
+                    controlIn[b] = parameters != nullptr ? parameters[i] : instance->getPluginInformation()->getParameter(i)->getPropertyAsFloat(AAP_PARAMETER_DEFAULT);
 	}
     // activate, run, deactivate
     instance->activate();
