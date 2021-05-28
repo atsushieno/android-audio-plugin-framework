@@ -69,9 +69,9 @@ fun Header(text: String) {
 fun PluginDetails(plugin: PluginInformation, state: PluginListViewModel.State) {
     val scrollState = rememberScrollState(0)
 
-    var parameters by remember { mutableStateOf(plugin.ports.map { p -> p.default }.toFloatArray()) }
+    val parameters by remember { mutableStateOf(plugin.parameters.map { p -> p.default }.toFloatArray()) }
     var pluginAppliedState by remember { mutableStateOf(false) }
-    var waveViewSource = state.preview.inBuf
+    val waveViewSource = state.preview.inBuf
     var waveState by remember { mutableStateOf(waveViewSource) }
 
     Column(modifier = Modifier.padding(8.dp).verticalScroll(scrollState)) {
@@ -140,6 +140,45 @@ fun PluginDetails(plugin: PluginInformation, state: PluginListViewModel.State) {
                 Text("Play")
             }
         }
+        Text(text = "Parameters", fontSize = 20.sp, modifier = Modifier.padding(12.dp))
+        Column {
+            for (parameter in plugin.parameters) {
+                Row(modifier = Modifier.border(1.dp, Color.LightGray)) {
+                    Column {
+                        Text(
+                            fontSize = 14.sp,
+                            text = when (parameter.content) {
+                                PortInformation.PORT_CONTENT_TYPE_AUDIO -> "Audio"
+                                PortInformation.PORT_CONTENT_TYPE_MIDI -> "MIDI"
+                                PortInformation.PORT_CONTENT_TYPE_MIDI2 -> "MIDI2"
+                                else -> "-"
+                            },
+                            modifier = Modifier.width(50.dp)
+                        )
+                    }
+                    Header(parameter.name)
+                    var sliderPosition by remember { mutableStateOf(parameter.default) }
+                    Text(
+                        fontSize = 10.sp,
+                        text = sliderPosition.toString(),
+                        modifier = Modifier.width(40.dp).align(Alignment.CenterVertically)
+                    )
+                    when (parameter.content) {
+                        PortInformation.PORT_CONTENT_TYPE_AUDIO, PortInformation.PORT_CONTENT_TYPE_MIDI, PortInformation.PORT_CONTENT_TYPE_MIDI2 -> {}
+                        else -> {
+                            Slider(
+                                value = sliderPosition,
+                                valueRange = if (parameter.minimum < parameter.maximum) parameter.minimum..parameter.maximum else Float.MIN_VALUE..Float.MAX_VALUE,
+                                steps = 10,
+                                onValueChange = {
+                                    parameters[plugin.ports.indexOf(parameter)] = it
+                                    sliderPosition = it
+                                })
+                        }
+                    }
+                }
+            }
+        }
         Text(text = "Ports", fontSize = 20.sp, modifier = Modifier.padding(12.dp))
         Column {
             for (port in plugin.ports) {
@@ -165,25 +204,6 @@ fun PluginDetails(plugin: PluginInformation, state: PluginListViewModel.State) {
                         )
                     }
                     Header(port.name)
-                    var sliderPosition by remember { mutableStateOf(port.default) }
-                    Text(
-                        fontSize = 10.sp,
-                        text = sliderPosition.toString(),
-                        modifier = Modifier.width(40.dp).align(Alignment.CenterVertically)
-                    )
-                    when (port.content) {
-                        PortInformation.PORT_CONTENT_TYPE_AUDIO, PortInformation.PORT_CONTENT_TYPE_MIDI, PortInformation.PORT_CONTENT_TYPE_MIDI2 -> {}
-                        else -> {
-                            Slider(
-                                value = sliderPosition,
-                                valueRange = if (port.minimum < port.maximum) port.minimum..port.maximum else Float.MIN_VALUE..Float.MAX_VALUE,
-                                steps = 10,
-                                onValueChange = {
-                                    parameters[plugin.ports.indexOf(port)] = it
-                                    sliderPosition = it
-                                })
-                        }
-                    }
                 }
             }
         }

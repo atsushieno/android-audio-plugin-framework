@@ -1,5 +1,5 @@
 
-#define AAP_PORT_URL "urn:org.androidaudioplugin.port"
+#define AAP_PORT_URL "urn:org.androidaudioplugin.parameter-properties"
 #define AAP_PORT_BASE AAP_PORT_URL "#"
 #define AAP_PORT_DEFAULT AAP_PORT_BASE "default"
 #define AAP_PORT_MAXIMUM AAP_PORT_BASE "maximum"

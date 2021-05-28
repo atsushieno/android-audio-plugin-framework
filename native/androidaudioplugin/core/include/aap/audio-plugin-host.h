@@ -15,7 +15,7 @@
 #include <map>
 #include <string>
 #include "aap/android-audio-plugin.h"
-#include "aap/port-properties.h"
+#include "aap/parameter-properties.h"
 
 namespace aap {
 
@@ -41,29 +41,14 @@ enum PluginInstantiationState {
 	PLUGIN_INSTANTIATION_STATE_TERMINATED,
 };
 
-class PortInformation
-{
-	std::string name{};
-	ContentType content_type;
-	PortDirection direction;
+class PropertyContainer {
 	std::map<std::string, std::string> properties{};
-	
-public:
-	PortInformation(std::string portName, ContentType content, PortDirection portDirection)
-			: name(portName), content_type(content), direction(portDirection)
-	{
-	}
 
-	const char* getName() const { return name.c_str(); }
-	ContentType getContentType() const { return content_type; }
-	PortDirection getPortDirection() const { return direction; }
+protected:
+	PropertyContainer() {}
 
 	// deprecated
 	bool hasValueRange() const { return hasProperty(AAP_PORT_DEFAULT); }
-
-	void setPropertyValueString(std::string id, std::string value) {
-		properties[id] = value;
-	}
 
 	// deprecated
 	float getDefaultValue() const { return hasProperty(AAP_PORT_DEFAULT) ? getPropertyAsFloat(AAP_PORT_DEFAULT) : 0.0f; }
@@ -71,6 +56,8 @@ public:
 	float getMinimumValue() const { return hasProperty(AAP_PORT_MINIMUM) ? getPropertyAsFloat(AAP_PORT_MINIMUM) : 0.0f; }
 	// deprecated
 	float getMaximumValue() const { return hasProperty(AAP_PORT_MAXIMUM) ? getPropertyAsFloat(AAP_PORT_MAXIMUM) : 0.0f; }
+
+public:
 
 	bool getPropertyAsBoolean(std::string id) const {
 		return getPropertyAsDouble(id) > 0;
@@ -90,6 +77,42 @@ public:
 	std::string getPropertyAsString(std::string id) const {
 		return properties.find(id)->second;
 	}
+
+	void setPropertyValueString(std::string id, std::string value) {
+		properties[id] = value;
+	}
+};
+
+class ParameterInformation : public PropertyContainer {
+	std::string name{};
+	ContentType content_type;
+
+public:
+	ParameterInformation(std::string parameterName, ContentType content)
+	: name(parameterName), content_type(content)
+	{
+	}
+
+	const char* getName() const { return name.c_str(); }
+	ContentType getContentType() const { return content_type; }
+};
+
+class PortInformation : public PropertyContainer
+{
+	std::string name{};
+	ContentType content_type;
+	PortDirection direction;
+	std::map<std::string, std::string> properties{};
+	
+public:
+	PortInformation(std::string portName, ContentType content, PortDirection portDirection)
+			: name(portName), content_type(content), direction(portDirection)
+	{
+	}
+
+	const char* getName() const { return name.c_str(); }
+	ContentType getContentType() const { return content_type; }
+	PortDirection getPortDirection() const { return direction; }
 };
 
 class PluginInformation
@@ -114,6 +137,8 @@ class PluginInformation
 	std::string primary_category{};
 	/* NULL-terminated list of ports */
 	std::vector<const PortInformation*> ports;
+	/* NULL-terminated list of ports */
+	std::vector<const ParameterInformation*> parameters;
 	/* NULL-terminated list of required extensions */
 	std::vector<std::unique_ptr<std::string>> required_extensions;
 	/* NULL-terminated list of optional extensions */
@@ -177,7 +202,17 @@ public:
 	{
 		return ports[(size_t) index];
 	}
-	
+
+	int getNumParameters() const
+	{
+		return (int) parameters.size();
+	}
+
+	const ParameterInformation* getParameter(int index) const
+	{
+		return parameters[(size_t) index];
+	}
+
 	int getNumRequiredExtensions() const
 	{
 		return (int) required_extensions.size();
@@ -250,6 +285,11 @@ public:
 	bool isOutProcess() const
 	{
 		return is_out_process;
+	}
+
+	void addParameter(ParameterInformation* para)
+	{
+		parameters.push_back(para);
 	}
 
 	void addPort(PortInformation* port)

@@ -6,6 +6,8 @@ extern "C" {
 
 typedef struct {
     /* any kind of extension information, which will be passed as void* */
+    float modL{0.5}, modR{0.5};
+    int32_t delayL{0}, delayR{256};
 } SamplePluginSpecific;
 
 void sample_plugin_delete(
@@ -25,22 +27,22 @@ void sample_plugin_process(AndroidAudioPlugin *plugin,
                            AndroidAudioPluginBuffer *buffer,
                            long timeoutInNanoseconds) {
 
+    auto p = (SamplePluginSpecific*) plugin->plugin_specific;
+
     // apply super-simple delay processing
     int size = buffer->num_frames * sizeof(float);
 
-    auto modL = ((float *) buffer->buffers[4])[0];
-    auto modR = ((float *) buffer->buffers[5])[0];
-    auto delayL = (int) ((float *) buffer->buffers[6])[0];
-    auto delayR = (int) ((float *) buffer->buffers[7])[0];
-    auto fIL = (float *) buffer->buffers[0];
-    auto fIR = (float *) buffer->buffers[1];
-    auto fOL = (float *) buffer->buffers[2];
-    auto fOR = (float *) buffer->buffers[3];
+    auto audioInL = (float *) buffer->buffers[0];
+    auto audioInR = (float *) buffer->buffers[1];
+    auto audioOutL = (float *) buffer->buffers[2];
+    auto audioOutR = (float *) buffer->buffers[3];
+    auto midiIn = (float *) buffer->buffers[4];
+    auto midiOut = (float *) buffer->buffers[5];
     for (int i = 0; i < size / sizeof(float); i++) {
-        if (i >= delayL)
-            fOL[i] = (float) (fIL[i - delayL] * modL);
-        if (i >= delayR)
-            fOR[i] = (float) (fIR[i - delayR] * modR);
+        if (i >= p->delayL)
+            audioOutL[i] = (float) (audioInL[i - p->delayL] * p->modL);
+        if (i >= p->delayR)
+            audioOutR[i] = (float) (audioInR[i - p->delayR] * p->modR);
     }
 
     /* do anything. In this example, inputs (0,1) are directly copied to outputs (2,3) */

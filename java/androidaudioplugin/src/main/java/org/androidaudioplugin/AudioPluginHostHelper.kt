@@ -16,7 +16,7 @@ class AudioPluginHostHelper {
         const val AAP_METADATA_NAME_PLUGINS = "org.androidaudioplugin.AudioPluginService#Plugins"
         const val AAP_METADATA_NAME_EXTENSIONS = "org.androidaudioplugin.AudioPluginService#Extensions"
         const val AAP_METADATA_CORE_NS = "urn:org.androidaudioplugin.core"
-        const val AAP_METADATA_PORT_PROPERTIES_NS = "urn:org.androidaudioplugin.port"
+        const val AAP_METADATA_PORT_PROPERTIES_NS = "urn:org.androidaudioplugin.parameter-properties"
 
         private fun parseAapMetadata(isOutProcess: Boolean, label: String, packageName: String, className: String, xp: XmlPullParser) : AudioPluginServiceInformation {
             // TODO: this XML parsing is super hacky so far.
@@ -61,14 +61,30 @@ class AudioPluginHostHelper {
                             isOutProcess
                         )
                         aapServiceInfo.plugins.add(currentPlugin)
+                    } else if (xp.name == "parameter" && (xp.namespace == "" || xp.namespace == AAP_METADATA_CORE_NS)) {
+                        if (currentPlugin != null) {
+                            val name = xp.getAttributeValue(null, "name")
+                            val content = xp.getAttributeValue(null, "content")
+                            val default = xp.getAttributeValue(AAP_METADATA_PORT_PROPERTIES_NS, "default")
+                            val minimum = xp.getAttributeValue(AAP_METADATA_PORT_PROPERTIES_NS, "minimum")
+                            val maximum = xp.getAttributeValue(AAP_METADATA_PORT_PROPERTIES_NS, "maximum")
+                            val contentInt = when (content) {
+                                "midi" -> PortInformation.PORT_CONTENT_TYPE_MIDI
+                                "midi2" -> PortInformation.PORT_CONTENT_TYPE_MIDI2
+                                "audio" -> PortInformation.PORT_CONTENT_TYPE_AUDIO
+                                else -> PortInformation.PORT_CONTENT_TYPE_GENERAL
+                            }
+                            val para = ParameterInformation(name, contentInt)
+                            para.default = default?.toFloat() ?: 0f
+                            para.minimum = minimum?.toFloat() ?: 1f
+                            para.maximum = maximum?.toFloat() ?: 0f
+                            currentPlugin.parameters.add(para)
+                        }
                     } else if (xp.name == "port" && (xp.namespace == "" || xp.namespace == AAP_METADATA_CORE_NS)) {
                         if (currentPlugin != null) {
                             val name = xp.getAttributeValue(null, "name")
                             val direction = xp.getAttributeValue(null, "direction")
                             val content = xp.getAttributeValue(null, "content")
-                            val default = xp.getAttributeValue(AAP_METADATA_PORT_PROPERTIES_NS, "default")
-                            val minimum = xp.getAttributeValue(AAP_METADATA_PORT_PROPERTIES_NS, "minimum")
-                            val maximum = xp.getAttributeValue(AAP_METADATA_PORT_PROPERTIES_NS, "maximum")
                             val directionInt = if (direction == "input") PortInformation.PORT_DIRECTION_INPUT else PortInformation.PORT_DIRECTION_OUTPUT
                             val contentInt = when (content) {
                                 "midi" -> PortInformation.PORT_CONTENT_TYPE_MIDI
@@ -77,12 +93,6 @@ class AudioPluginHostHelper {
                                 else -> PortInformation.PORT_CONTENT_TYPE_GENERAL
                             }
                             val port = PortInformation(name, directionInt, contentInt)
-                            if (default != null)
-                                port.default = default.toFloat()
-                            if (minimum != null)
-                                port.minimum = minimum.toFloat()
-                            if (maximum != null)
-                                port.maximum = maximum.toFloat()
                             currentPlugin.ports.add(port)
                         }
                     }

@@ -24,6 +24,7 @@ const char *strdup_fromJava(JNIEnv *env, jstring s) {
 }
 
 const char *java_plugin_information_class_name = "org/androidaudioplugin/PluginInformation",
+		*java_parameter_information_class_name = "org/androidaudioplugin/ParameterInformation",
 		*java_port_information_class_name = "org/androidaudioplugin/PortInformation",
 		*java_audio_plugin_host_helper_class_name = "org/androidaudioplugin/AudioPluginHostHelper";
 
@@ -38,20 +39,25 @@ static jmethodID
 		j_method_get_shared_library_filename,
 		j_method_get_library_entrypoint,
 		j_method_get_category,
+		j_method_get_parameter_count,
+		j_method_get_parameter,
 		j_method_get_port_count,
 		j_method_get_port,
+		j_method_parameter_get_name,
+		j_method_parameter_get_content,
+		j_method_parameter_has_value_range,
+		j_method_parameter_get_default,
+		j_method_parameter_get_minimum,
+		j_method_parameter_get_maximum,
 		j_method_port_get_name,
 		j_method_port_get_direction,
 		j_method_port_get_content,
-		j_method_port_has_value_range,
-		j_method_port_get_default,
-		j_method_port_get_minimum,
-		j_method_port_get_maximum,
 		j_method_query_audio_plugins;
 
 void initializeJNIMetadata(JNIEnv *env)
 {
 	jclass java_plugin_information_class = env->FindClass(java_plugin_information_class_name),
+			java_parameter_information_class = env->FindClass(java_parameter_information_class_name),
 			java_port_information_class = env->FindClass(java_port_information_class_name),
 			java_audio_plugin_host_helper_class = env->FindClass(java_audio_plugin_host_helper_class_name);
 
@@ -78,24 +84,32 @@ void initializeJNIMetadata(JNIEnv *env)
 	j_method_get_category = env->GetMethodID(java_plugin_information_class,
 													   "getCategory",
 													   "()Ljava/lang/String;");
+	j_method_get_parameter_count = env->GetMethodID(java_plugin_information_class,
+											   "getParameterCount", "()I");
+	j_method_get_parameter = env->GetMethodID(java_plugin_information_class, "getParameter",
+										 "(I)Lorg/androidaudioplugin/ParameterInformation;");
 	j_method_get_port_count = env->GetMethodID(java_plugin_information_class,
 											   "getPortCount", "()I");
 	j_method_get_port = env->GetMethodID(java_plugin_information_class, "getPort",
 										 "(I)Lorg/androidaudioplugin/PortInformation;");
+	j_method_parameter_get_name = env->GetMethodID(java_parameter_information_class, "getName",
+											  "()Ljava/lang/String;");
+	j_method_parameter_get_content = env->GetMethodID(java_parameter_information_class, "getContent",
+												 "()I");
+	j_method_parameter_has_value_range = env->GetMethodID(java_parameter_information_class, "getHasValueRange",
+													 "()Z");
+	j_method_parameter_get_default = env->GetMethodID(java_parameter_information_class, "getDefault",
+												 "()F");
+	j_method_parameter_get_minimum = env->GetMethodID(java_parameter_information_class, "getMinimum",
+												 "()F");
+	j_method_parameter_get_maximum = env->GetMethodID(java_parameter_information_class, "getMaximum",
+												 "()F");
 	j_method_port_get_name = env->GetMethodID(java_port_information_class, "getName",
 											  "()Ljava/lang/String;");
 	j_method_port_get_direction = env->GetMethodID(java_port_information_class,
 												   "getDirection", "()I");
 	j_method_port_get_content = env->GetMethodID(java_port_information_class, "getContent",
 												 "()I");
-	j_method_port_has_value_range = env->GetMethodID(java_port_information_class, "getHasValueRange",
-												 "()Z");
-	j_method_port_get_default = env->GetMethodID(java_port_information_class, "getDefault",
-													 "()F");
-	j_method_port_get_minimum = env->GetMethodID(java_port_information_class, "getMinimum",
-												 "()F");
-	j_method_port_get_maximum = env->GetMethodID(java_port_information_class, "getMaximum",
-												 "()F");
 	j_method_query_audio_plugins = env->GetStaticMethodID(java_audio_plugin_host_helper_class, "queryAudioPlugins",
 														  "(Landroid/content/Context;)[Lorg/androidaudioplugin/PluginInformation;");
 }
@@ -133,6 +147,21 @@ pluginInformation_fromJava(JNIEnv *env, jobject pluginInformation) {
 	for (auto p : freeList)
 		free((void*) p);
 
+	int nParams = env->CallIntMethod(pluginInformation, j_method_get_parameter_count);
+	for (int i = 0; i < nParams; i++) {
+		jobject para = env->CallObjectMethod(pluginInformation, j_method_get_parameter, i);
+		auto name = strdup_fromJava(env, (jstring) env->CallObjectMethod(para, j_method_parameter_get_name));
+		auto content = (aap::ContentType) (int) env->CallIntMethod(para, j_method_parameter_get_content);
+		auto nativePara = new aap::ParameterInformation(name, content);
+		if (env->CallBooleanMethod(para, j_method_parameter_has_value_range)) {
+			nativePara->setPropertyValueString(AAP_PORT_DEFAULT, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_default)));
+			nativePara->setPropertyValueString(AAP_PORT_MINIMUM, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_minimum)));
+			nativePara->setPropertyValueString(AAP_PORT_MAXIMUM, std::to_string(env->CallFloatMethod(para, j_method_parameter_get_maximum)));
+		}
+		aapPI->addParameter(nativePara);
+		free((void*) name);
+	}
+
 	int nPorts = env->CallIntMethod(pluginInformation, j_method_get_port_count);
 	for (int i = 0; i < nPorts; i++) {
 		jobject port = env->CallObjectMethod(pluginInformation, j_method_get_port, i);
@@ -140,11 +169,6 @@ pluginInformation_fromJava(JNIEnv *env, jobject pluginInformation) {
 		auto content = (aap::ContentType) (int) env->CallIntMethod(port, j_method_port_get_content);
 		auto direction = (aap::PortDirection) (int) env->CallIntMethod(port, j_method_port_get_direction);
 		auto nativePort = new aap::PortInformation(name, content, direction);
-		if (env->CallBooleanMethod(port, j_method_port_has_value_range)) {
-			nativePort->setPropertyValueString(AAP_PORT_DEFAULT, std::to_string(env->CallFloatMethod(port, j_method_port_get_default)));
-			nativePort->setPropertyValueString(AAP_PORT_MINIMUM, std::to_string(env->CallFloatMethod(port, j_method_port_get_minimum)));
-			nativePort->setPropertyValueString(AAP_PORT_MAXIMUM, std::to_string(env->CallFloatMethod(port, j_method_port_get_maximum)));
-		}
 		aapPI->addPort(nativePort);
 		free((void*) name);
 	}
@@ -153,7 +177,10 @@ pluginInformation_fromJava(JNIEnv *env, jobject pluginInformation) {
 }
 
 
-// FIXME: I haven't figured out how it results in crashes yet. Plugins must be set in Kotlin layer so far.
+// If you are debugging on emulator, it may crashes here.
+// FIXME: I used to think that the crash is in my code, not debugger.
+//  and thus designed the API so that plugins must be set in Kotlin layer at that moment.
+//  But it may be extraneous concern nowadays.
 jobjectArray queryInstalledPluginsJNI()
 {
 	auto apal = dynamic_cast<aap::AndroidPluginHostPAL*>(aap::getPluginHostPAL());

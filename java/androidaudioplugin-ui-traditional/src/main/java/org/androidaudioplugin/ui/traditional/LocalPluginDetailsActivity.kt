@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import org.androidaudioplugin.AudioPluginHostHelper
 import org.androidaudioplugin.PluginInformation
-import org.androidaudioplugin.PortInformation
+import org.androidaudioplugin.ParameterInformation
 import org.androidaudioplugin.ui.traditional.databinding.AudioPluginParametersListItemBinding
 import org.androidaudioplugin.ui.traditional.databinding.LocalPluginDetailsBinding
 import java.lang.UnsupportedOperationException
@@ -29,8 +29,8 @@ class LocalPluginDetailsActivity : AppCompatActivity() {
 
         plugin = AudioPluginHostHelper.queryAudioPlugins(this).first { p -> p.pluginId == pluginId }
 
-        val portsAdapter = PortViewAdapter(this, R.layout.audio_plugin_parameters_list_item, plugin.ports)
-        binding.audioPluginParametersListView.adapter = portsAdapter
+        val parametersAdapter = ParameterViewAdapter(this, R.layout.audio_plugin_parameters_list_item, plugin.parameters)
+        binding.audioPluginParametersListView.adapter = parametersAdapter
 
         binding.pluginNameLabel.text = plugin.displayName
 
@@ -43,11 +43,11 @@ class LocalPluginDetailsActivity : AppCompatActivity() {
 
     private lateinit var plugin : PluginInformation
 
-    inner class PortViewAdapter(
+    inner class ParameterViewAdapter(
         ctx: Context,
         layout: Int,
-        private val ports: List<PortInformation>
-    ) : ArrayAdapter<PortInformation>(ctx, layout, ports) {
+        private val parameters: List<ParameterInformation>
+    ) : ArrayAdapter<ParameterInformation>(ctx, layout, parameters) {
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val binding = AudioPluginParametersListItemBinding.inflate(LayoutInflater.from(this@LocalPluginDetailsActivity))
@@ -57,14 +57,14 @@ class LocalPluginDetailsActivity : AppCompatActivity() {
                 throw UnsupportedOperationException("item not available!?")
 
             binding.audioPluginParameterContentType.text = if (item.content == 1) "Audio" else if (item.content == 2) "Midi" else "Other"
-            binding.audioPluginParameterDirection.text = if (item.direction == 0) "In" else "Out"
+            //binding.audioPluginParameterDirection.text = if (item.direction == 0) "In" else "Out"
             binding.audioPluginParameterName.text = item.name
             binding.audioPluginParameterValue.addOnChangeListener{ _, value, _ ->
-                    parameters[position] = value
+                    parameterValues[position] = value
                     binding.audioPluginEditTextParameterValue.text.clear()
                     binding.audioPluginEditTextParameterValue.text.insert(0, value.toString())
             }
-            val value = parameters[ports.indexOf(item)]
+            val value = parameterValues[parameters.indexOf(item)]
             binding.audioPluginEditTextParameterValue.text.clear()
             binding.audioPluginEditTextParameterValue.text.insert(0, value.toString())
             if (item.minimum < item.maximum) {
@@ -75,11 +75,11 @@ class LocalPluginDetailsActivity : AppCompatActivity() {
             return view
         }
 
-        private val parameters = ports.map { p -> p.default }.toFloatArray()
+        private val parameterValues = parameters.map { p -> p.default }.toFloatArray()
 
         init {
-            for (i in parameters.indices)
-                parameters[i] = ports[i].default
+            for (i in parameterValues.indices)
+                parameterValues[i] = parameters[i].default
         }
     }
 }

@@ -65,7 +65,7 @@ The other one with `org.androidaudioplugin.AudioPluginService#Plugins` is to spe
 
 ```
 <plugins xmlns="urn:org.androidaudioplugin.core"
-         xmlns:pp="urn:org.androidaudioplugin.port">
+         xmlns:pp="urn:org.androidaudioplugin.parameter-properties">
   <plugin manufacturer="AndroidAudioPluginProject"
           name="BareBoneSamplePlugin">
     <ports>

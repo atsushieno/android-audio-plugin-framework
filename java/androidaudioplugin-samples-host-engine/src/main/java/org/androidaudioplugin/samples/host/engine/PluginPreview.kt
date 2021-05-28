@@ -164,7 +164,7 @@ class PluginPreview(context: Context) {
     private fun processPluginOnce(parametersOnUI: FloatArray?) {
         val instance = this.instance!!
         val plugin = instance.pluginInfo
-        val parameters = parametersOnUI ?: (0 until plugin.ports.count()).map { i -> plugin.ports[i].default }.toFloatArray()
+        val parameters = parametersOnUI ?: (0 until plugin.ports.count()).map { i -> plugin.parameters[i].default }.toFloatArray()
 
         val midiSequence = getMidiSequence()
         val midi1Events = splitMidi1Events(midiSequence.toUByteArray())

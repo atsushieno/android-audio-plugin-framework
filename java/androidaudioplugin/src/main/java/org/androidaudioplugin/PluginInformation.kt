@@ -10,6 +10,19 @@ class PluginInformation(var packageName: String, var localName: String, var disp
         const val PRIMARY_CATEGORY_INSTRUMENT = "Instrument"
     }
 
+    var parameters = mutableListOf<ParameterInformation>()
+
+    // These obvious members are for use in C interop.
+    fun getParameterCount() : Int
+    {
+        return parameters.size
+    }
+
+    fun getParameter(index : Int) : ParameterInformation
+    {
+        return parameters[index]
+    }
+
     var ports = mutableListOf<PortInformation>()
 
     // These obvious members are for use in C interop.

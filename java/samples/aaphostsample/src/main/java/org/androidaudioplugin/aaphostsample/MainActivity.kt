@@ -43,9 +43,9 @@ class MainActivity : AppCompatActivity() {
                 binding.iconImageView.setImageDrawable(item.first.icon)
 
             view.setOnClickListener {
-                portsAdapter = PortViewAdapter(this@MainActivity, R.layout.audio_plugin_parameters_list_item, plugin.ports)
+                parametersAdapter = ParameterViewAdapter(this@MainActivity, R.layout.audio_plugin_parameters_list_item, plugin.parameters)
                 this@MainActivity.selectedPluginIndex = position
-                this@MainActivity.binding.audioPluginParametersListView.adapter = portsAdapter
+                this@MainActivity.binding.audioPluginParametersListView.adapter = parametersAdapter
 
                 this@MainActivity.binding.buttonLaunchUi.setOnClickListener {
                     launchInProcessPluginUI(item.second)
@@ -61,8 +61,8 @@ class MainActivity : AppCompatActivity() {
         AudioPluginHostHelper.launchInProcessPluginUI(this, pluginInfo, instanceId)
     }
 
-    inner class PortViewAdapter(ctx:Context, layout: Int, private var ports: List<PortInformation>)
-        : ArrayAdapter<PortInformation>(ctx, layout, ports)
+    inner class ParameterViewAdapter(ctx:Context, layout: Int, private var ports: List<ParameterInformation>)
+        : ArrayAdapter<ParameterInformation>(ctx, layout, ports)
     {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View
         {
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                 throw UnsupportedOperationException()
 
             binding.audioPluginParameterContentType.text = if(item.content == 1) "Audio" else if(item.content == 2) "Midi" else "Other"
-            binding.audioPluginParameterDirection.text = if(item.direction == 0) "In" else "Out"
+            //binding.audioPluginParameterDirection.text = if(item.direction == 0) "In" else "Out"
             binding.audioPluginParameterName.text = item.name
             binding.audioPluginParameterValue.addOnChangeListener { _, value, _ ->
                 parameters[position] = value
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
 
     private lateinit var preview : PluginPreview
-    private var portsAdapter : PortViewAdapter? = null
+    private var parametersAdapter : ParameterViewAdapter? = null
     private var selectedPluginIndex : Int = -1
 
     override fun onDestroy() {
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                     return@setOnCheckedChangeListener
                 var item = adapter.getItem(selectedPluginIndex)
                 if (item != null)
-                    preview.applyPlugin(item.first, item.second, portsAdapter?.parameters)
+                    preview.applyPlugin(item.first, item.second, parametersAdapter?.parameters)
             } else {
                 binding.wavePostPlugin.sample = preview.inBuf.map { b -> b.toInt() }.toIntArray()
                 binding.wavePostPlugin.requestLayout()

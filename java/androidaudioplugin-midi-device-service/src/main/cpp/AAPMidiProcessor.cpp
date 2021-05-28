@@ -144,7 +144,6 @@ namespace aapmidideviceservice {
         }
 
         auto pluginInfo = host_manager.getPluginInformation(pluginId);
-        int32_t numPorts = pluginInfo->getNumPorts();
         if (pluginInfo->isInstrument())
             if (instrument_instance_id != 0) {
                 const auto& info = host->getInstance(instrument_instance_id)->getPluginInformation();
@@ -153,6 +152,8 @@ namespace aapmidideviceservice {
                 state = AAP_MIDI_PROCESSOR_STATE_ERROR;
                 return;
             }
+
+        int32_t numPorts = pluginInfo->getNumPorts();
 
         auto instanceId = host->createInstance(pluginId, sample_rate, true);
         auto instance = host->getInstance(instanceId);
@@ -193,7 +194,7 @@ namespace aapmidideviceservice {
             data->setPortSharedMemoryFD(i, fd);
             sharedMemoryExtension->setPortBufferFD(i, fd);
             data->plugin_buffer->buffers[i] = mmap(nullptr, memSize,
-                                                         PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+                                                   PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
             auto port = pluginInfo->getPort(i);
             if (port->getContentType() == aap::AAP_CONTENT_TYPE_AUDIO && port->getPortDirection() == aap::AAP_PORT_DIRECTION_OUTPUT)
@@ -202,8 +203,6 @@ namespace aapmidideviceservice {
                 data->midi2_in_port = i;
             else if (port->getContentType() == aap::AAP_CONTENT_TYPE_MIDI && port->getPortDirection() == aap::AAP_PORT_DIRECTION_INPUT)
                 data->midi1_in_port = i;
-            else if (port->hasProperty(AAP_PORT_DEFAULT))
-                *((float*) data->plugin_buffer->buffers[i]) = port->getDefaultValue();
         }
 
         instance->prepare(aap_frame_size, data->plugin_buffer.get());
